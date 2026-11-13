@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>اصطد النجوم</title>
+<style>
+  body{margin:0;background:#1b2a41;color:#f4f4f4;font-family:Tahoma,Arial,sans-serif;display:flex;flex-direction:column;align-items:center;padding:16px}
+  h1{margin:0 0 8px;font-size:22px}
+  #info{margin-bottom:8px;font-size:18px}
+  canvas{background:#0f1b2d;border:3px solid #f2c14e;border-radius:8px;max-width:100%;touch-action:none}
+  button{margin-top:12px;padding:8px 20px;font-size:16px;background:#f2c14e;border:0;border-radius:6px;cursor:pointer}
+</style>
+</head>
+<body>
+<h1>اصطد النجوم ⭐</h1>
+<div id="info">النقاط: <span id="s">0</span> | الأرواح: <span id="l">3</span></div>
+<canvas id="c" width="360" height="480"></canvas>
+<p>حرّك السلة بالأسهم أو بإصبعك. تجنب الصخور!</p>
+<button onclick="start()">ابدأ من جديد</button>
+<script>
+const c=document.getElementById('c'),x=c.getContext('2d');
+let p,items,score,lives,over,t;
+function start(){p={x:160,w:60};items=[];score=0;lives=3;over=false;t=0;upd()}
+function upd(){document.getElementById('s').textContent=score;document.getElementById('l').textContent=lives}
+function move(cx){const r=c.getBoundingClientRect();p.x=(cx-r.left)*(c.width/r.width)-p.w/2;p.x=Math.max(0,Math.min(c.width-p.w,p.x))}
+c.addEventListener('mousemove',e=>move(e.clientX));
+c.addEventListener('touchmove',e=>{move(e.touches[0].clientX)});
+addEventListener('keydown',e=>{if(e.key==='ArrowLeft')p.x=Math.max(0,p.x-25);if(e.key==='ArrowRight')p.x=Math.min(c.width-p.w,p.x+25)});
+function loop(){
+  x.clearRect(0,0,c.width,c.height);
+  if(!over){
+    t++;
+    if(t%40===0)items.push({x:Math.random()*(c.width-24),y:-20,star:Math.random()>0.3});
+    items.forEach(i=>i.y+=2+score/15);
+    items=items.filter(i=>{
+      if(i.y>c.height-40&&i.y<c.height-10&&i.x+24>p.x&&i.x<p.x+p.w){
+        if(i.star)score++;else lives--;
+        upd();if(lives<=0)over=true;return false}
+      return i.y<c.height});
+  }
+  x.fillStyle='#f2c14e';x.fillRect(p.x,c.height-30,p.w,16);
+  x.font='24px serif';
+  items.forEach(i=>x.fillText(i.star?'⭐':'🪨',i.x,i.y));
+  if(over){x.fillStyle='rgba(0,0,0,.6)';x.fillRect(0,0,c.width,c.height);
+    x.fillStyle='#fff';x.font='28px Tahoma';x.textAlign='center';
+    x.fillText('انتهت اللعبة! نقاطك: '+score,c.width/2,c.height/2);x.textAlign='start'}
+  requestAnimationFrame(loop)
+}
+start();loop();
+</script>
+</body>
+</html>
